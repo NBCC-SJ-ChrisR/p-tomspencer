@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .error-message {
+            color: white;
+            font-size: 24px;
+            background-color: #dc3545;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            border-radius: 5px;
+            animation: slide-down 0.2s ease, fade-out 1.5s ease 0.5s forwards;
+        }
+
+        @keyframes slide-down {
+            from {
+                transform: translateX(-50%) translateY(-100%);
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes fade-out {
+            to {
+                opacity: 0;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Align radio buttons and checkboxes properly with labels */
+        input[type="radio"], input[type="checkbox"] {
+            /*vertical-align: middle; !* Aligns with the middle of the text *!*/
+            margin-right: 8px; /* Adds spacing between input and label */
+        }
+
+        /* Ensure labels and inputs are properly aligned in one row */
+        #editSizes div,
+        #editCrusts div,
+        #editToppings div {
+            display: flex;
+            align-items: center; /* Vertically align items */
+            margin-bottom: 10px; /* Adds spacing between rows */
+        }
+
+        /*Prevent the text from wrapping awkwardly by limiting the label's width*/
+        label {
+            white-space: nowrap; /* Ensures no text wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Adds "..." for overflowing text */
+        }
+
+        h2 {
+
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        form {
+            width: 50%;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        form label {
+            display: block;
+            font-weight: bold;
+            margin: 10px 0 5px;
+        }
+
+        form input, form select, form button {
+            width: 80%;
+            padding: 10px;
+            margin: auto;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        form button, button {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form button:hover, button:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            text-align: center;
+            text-decoration: none;
+            background-color: #6c757d;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        a:hover {
+            background-color: #5a6268;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            text-align: left;
+            padding: 12px;
+        }
+
+        table th {
+            background-color: #007bff;
+            color: black;
+        }
+
+        /*table tr:nth-child(even) {*/
+        /*  background-color: #f2f2f2;*/
+        /*}*/
+
+        /*table tr:hover {*/
+        /*  background-color: #ddd;*/
+        /*}*/
+
+        .edit-edit {
+            background-color: green;
+        }
+
+        .edit-edit:hover {
+            background-color: darkgreen;
+        }
+
+        .edit-toggle {
+            background-color: maroon;
+        }
+
+        .edit-toggle:hover {
+            background-color: crimson;
+        }
+
+        .add-btn {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 10px;
+        }
+
+        .add-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* Center the Add Topping button */
+        .center-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            padding: 10px 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        /*button:hover {*/
+        /*    background-color: #0056b3;*/
+        /*    transform: translateY(-2px);*/
+        /*    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);*/
+        /*}*/
+
+    </style>
+    <script>
+
+        /**
+         * Fetches the available pizza toppings from the server.
+         *
+         * This function makes a GET request to the '/pizzaToppings' endpoint
+         * to retrieve the list of available pizza toppings. If the request
+         * fails or the server responds with an error, it logs the error and
+         * returns an empty array.
+         *
+         * @returns {Promise<Array>} A promise resolving to an array of topping objects.
+         *                           Returns an empty array if the request fails.
+         */
+        async function fetchToppings() {
+            try {
+                // Send a GET request to the '/pizzaToppings' endpoint
+                const response = await fetch('/pizzaToppings');
+
+                // Handle HTTP errors by logging the error and returning an empty array
+                if (!response.ok) {
+                    const errorMessage = await response.text(); // Extract error message from response
+                    console.error('Error response from server:', errorMessage);
+                    return [];
+                }
+
+                // Parse and return the JSON response
+                return await response.json();
+            } catch (error) {
+                // Log any network or runtime errors to the console
+                console.error('Error fetching toppings:', error);
+                return [];
+            }
+        }
+        async function fetchCrusts() {
+            try {
+                const response = await fetch('/pizzaCrust');
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    return [];
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching toppings:', error);
+                return [];
+            }
+        }
+        async function fetchSizes() {
+            try {
+                const response = await fetch('/pizzaSize');
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    return [];
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching toppings:', error);
+                return [];
+            }
+        }
+
+        /**
+         * Sends a new order to the server for creation.
+         *
+         * This function makes a POST request to the '/orders' endpoint with the provided
+         * order object as the payload. If the request fails or the server responds with
+         * an error, it logs the error and returns `null`.
+         *
+         * @param {Object} order - The order object containing details such as customer info,
+         *                         order items, totals, and any additional metadata.
+         * @returns {Promise<Object|null>} A promise resolving to the created order object
+         *                                 if the request is successful, or `null` if there
+         *                                 is an error.
+         */
+        async function createOrder(order) {
+            try {
+                // Make a POST request to the '/orders' endpoint with the order data
+                const response = await fetch('/orders', {
+                    method: 'POST', // HTTP method: POST to create a resource
+                    headers: {
+                        'Content-Type': 'application/json', // Indicate that the body is JSON
+                    },
+                    body: JSON.stringify(order), // Serialize the order object to JSON
+                });
+
+                // Check if the response status indicates success (2xx)
+                if (!response.ok) {
+                    // Extract and log the error message from the response body
+                    const errorMessage = await response.text();
+                    console.error('Error creating order:', errorMessage);
+                    return null; // Return `null` if the server indicates a failure
+                }
+
+                // Parse and return the JSON response (e.g., order confirmation)
+                return await response.json();
+            } catch (error) {
+                // Catch and log any network or runtime errors
+                console.error('Error sending order:', error);
+                return null; // Return `null` in case of an exception
+            }
+        }
+        async function createPizza(pizza) {
+            try {
+                const response = await fetch('/pizzas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(pizza),
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    console.error('Error creating pizza:', errorMessage, pizza);
+                    alert('Could not add this pizza to your order:\n\n' + errorMessage + '\n\nPlease edit this pizza and resubmit your order!');
+                    return null; // Return null if the response is not OK
+                }
+
+                // Return the response body (order confirmation or similar)
+                return await response.json();
+            } catch (error) {
+                console.error('Error sending pizza:', error);
+                return null; // Return null in case of an error
+            }
+        }
+
+
+        /**
+         * Deletes an order by its ID from the server.
+         *
+         * This function makes a DELETE request to the `/orders/{orderId}` endpoint.
+         * If the server responds with an error or the request fails, it logs the error
+         * and displays an alert to the user. The function returns a boolean indicating
+         * the success or failure of the operation.
+         *
+         * @param {number|string} orderId - The ID of the order to be deleted.
+         * @returns {Promise<boolean>} A promise resolving to `true` if the deletion was
+         *                             successful, or `false` if an error occurred.
+         */
+        async function deleteOrder(orderId) {
+            try {
+                // Make a DELETE request to the server with the order ID
+                const response = await fetch(`/orders/${orderId}`, {
+                    method: 'DELETE', // HTTP method: DELETE to remove the resource
+                });
+
+                // Check if the response status indicates success (2xx)
+                if (!response.ok) {
+                    // Extract and log the error message from the response body
+                    const errorMessage = await response.text();
+                    // Notify the user of the error
+                    alert(`Error deleting order with ID ${orderId}:\n${errorMessage}`);
+                    return false; // Return `false` to indicate failure
+                }
+
+                // Return `true` if the deletion was successful
+                return true;
+            } catch (error) {
+                // Catch and log any network or runtime errors
+                console.error('Error deleting order:', error);
+                return false; // Return `false` in case of an exception
+            }
+        }
+        async function deletePizza(pizzaId) {
+            try {
+                const response = await fetch(`/pizzas/${pizzaId}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    // Log the error or display an alert
+                    alert(`Error deleting pizza with ID ${pizzaId}:\n${errorMessage}`);
+                    return false; // Return false if the response is not OK
+                }
+
+                // Return true if the deletion was successful
+                return true;
+            } catch (error) {
+                console.error('Error deleting pizza:', error);
+                return false; // Return false in case of an error
+            }
+        }
+        async function deletePizzaToppingMap(pizzaToppingMapId) {
+            try {
+                const response = await fetch(`/pizzaToppingMap/${pizzaToppingMapId}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    // Log the error or display an alert
+                    alert(`Error deleting pizza topping map with ID ${pizzaToppingMapId}:\n${errorMessage}`);
+                    return false; // Return false if the response is not OK
+                }
+
+                // Return true if the deletion was successful
+                return true;
+            } catch (error) {
+                console.error('Error deleting pizza topping mapping:', error);
+                return false; // Return false in case of an error
+            }
+        }
+        async function createPizzaToppingMap(pizzaToppingMap) {
+            try {
+                const response = await fetch('/pizzaToppingMap', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(pizzaToppingMap),
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    console.error('Error creating pizza topping map:', errorMessage);
+                    return null; // Return null if the response is not OK
+                }
+
+                // Return the response body (order confirmation or similar)
+                return await response.json();
+            } catch (error) {
+                console.error('Error sending pizza topping map:', error);
+                return null; // Return null in case of an error
+            }
+        }
+
+
+        /**
+         * Loads the user's cart and dynamically generates the cart display.
+         *
+         * This function fetches necessary data (toppings, crusts, sizes) and checks for completeness.
+         * It builds and displays the cart contents, user details, and options for pickup/delivery,
+         * payment methods, and order completion. If any required data is missing, it redirects to the dashboard.
+         */
+        async function LoadUserCart() {
+            // Getting preliminaries
+            let toppings = await fetchToppings();
+            let crusts = await fetchCrusts();
+            let sizes = await fetchSizes();
+
+            // Redirect to dashboard if any list is empty
+            if (toppings.length === 0 || crusts.length === 0 || sizes.length === 0) {
+                alert("Some data is missing. Redirecting to the dashboard.");
+                window.location.href = "customerDashboard.html"; // Update with your actual dashboard path
+                return;
+            }
+            // Get references to DOM elements and retrieve the cart and user data
+            let cartDiv = document.getElementById('cartDisplay');
+            cartDiv.innerHTML = "";
+            let cart = JSON.parse(sessionStorage.getItem('userCart')) || [];
+            let user = JSON.parse(sessionStorage.getItem('user'));
+
+            // Check if the cart is empty
+            if (cart.length === 0) {
+                let errorDiv = document.getElementById("empty")
+                errorDiv.innerHTML = "No items to display.";
+                return;
+            }
+
+            // Generate table for the cart
+            let tableHtml = `
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Size</th>
+                            <th>Crust</th>
+                            <th>Toppings</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Initialize variables for subtotal and total pizzas (for order time calcs)
+            let subtotal = 0;
+            let totalPizzas = 0;
+
+            // Iterate over the cart items and populate the table rows
+            cart.forEach((item, index) => {
+                // Get size, crust, and toppings names
+                let size = sizes.find(s => s.pizzaSizeId === item.size)?.name || "Unknown";
+                let crust = crusts.find(c => c.pizzaCrustId === item.crust)?.name || "Unknown";
+                let selectedToppings = item.toppings
+                    .map(toppingId => {
+                        let toppingName = toppings.find(t => t.pizzaToppingId === toppingId)?.name || "Unknown";
+                        return toppingName.charAt(0).toUpperCase() + toppingName.slice(1);
+                    })
+                    .join(", ");
+                selectedToppings = selectedToppings.length === 0 ? "None" : selectedToppings;
+
+                // Calculate subtotal for the current item
+                let sizePrice = sizes.find(s => s.pizzaSizeId === item.size)?.price || 0;
+                let crustPrice = crusts.find(c => c.pizzaCrustId === item.crust)?.price || 0;
+                let toppingsPrice = item.toppings.reduce((acc, toppingId) => {
+                    let topping = toppings.find(t => t.pizzaToppingId === toppingId);
+                    return acc + (topping?.price || 0);
+                }, 0);
+
+                let itemSubtotal = (sizePrice + crustPrice + toppingsPrice) * item.quantity;
+                subtotal += itemSubtotal; // Add to the total subtotal
+                totalPizzas += item.quantity; // Increment the total number of pizzas
+
+                // Add row to the table
+                tableHtml += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${size}</td>
+                        <td>${crust}</td>
+                        <td>${selectedToppings}</td>
+                        <td>${item.quantity}</td>
+                        <td>${itemSubtotal.toLocaleString("en-US", {style: "currency", currency: "USD"})}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="editCartItem(${index})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="DeleteCartItem(${index})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Close table body and add totals
+            let tax = subtotal * 0.15;
+            let total = subtotal + tax;
+
+            tableHtml += `
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="text-end"><strong>Subtotal:</strong></td>
+                            <td>${subtotal.toLocaleString("en-US", {style: "currency", currency: "USD"})}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end"><strong>Tax (15%):</strong></td>
+                            <td>${tax.toLocaleString("en-US", {style: "currency", currency: "USD"})}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end"><strong>Total:</strong></td>
+                            <td>${total.toLocaleString("en-US", {style: "currency", currency: "USD"})}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+
+            // Display the cart table
+            cartDiv.innerHTML = tableHtml;
+
+            // Calculate and display pickup/delivery options
+            let baseTime = 12; // First pizza takes 12 minutes
+            let extraTime = (totalPizzas - 1) * 8; // Each additional pizza takes 8 minutes
+            let asapTime = baseTime + extraTime;
+            // Get current time and calculate the available time
+            let now = new Date();
+            let asapPickupTime = new Date(now.getTime() + asapTime * 60000); // ASAP time in minutes
+
+            // Adjust for local timezone when setting the value for the time input
+            function toLocalTimeStringForInput(date) {
+                let local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+                return local.toISOString().substring(11, 16); // Format to HH:mm
+            }
+
+            // Format ASAP pickup time
+            let formattedAsapTime = asapPickupTime.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+
+            // Generate pickup/delivery selection with Bootstrap styling
+            let timeHtml = `
+                <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Pickup or Delivery</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Pickup Option -->
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="orderType" value="pickup" id="pickupOption" checked>
+                            <label for="pickupOption" class="form-check-label">
+                                Pickup
+                            </label>
+                            <div class="mt-2 ms-4">
+                                <p><strong>Earliest Pickup Time:</strong> ${formattedAsapTime}</p>
+                                <label for="pickupTime" class="form-label">Choose pickup time:</label>
+                                <input type="time" id="pickupTime" name="pickupTime"
+                                    class="form-control w-auto"
+                                    value="${toLocalTimeStringForInput(asapPickupTime)}"
+                                    min="${toLocalTimeStringForInput(asapPickupTime)}"
+                                    step="900"
+                                    onchange="validatePickupTime('${toLocalTimeStringForInput(asapPickupTime)}')">
+                            </div>
+                        </div>
+
+                        <!-- Delivery Option -->
+                        <div class="form-check mt-3">
+                            <input type="radio" class="form-check-input" name="orderType" value="delivery" id="deliveryOption">
+                            <label for="deliveryOption" class="form-check-label">
+                                Delivery - 15 minutes
+                            </label>
+                            <div class="mt-2 ms-4">
+                                <label for="deliveryTime" class="form-label">Estimated delivery time:</label>
+                                <input type="time" id="deliveryTime" name="deliveryTime"
+                                    class="form-control w-auto"
+                                    value="${toLocalTimeStringForInput(new Date(asapPickupTime.getTime() + 15 * 60000))}"
+                                    disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Generate table for user details
+            let userDetailsHtml = `
+                <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">User Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Name</th>
+                                    <td>${user.firstName} ${user.lastName}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Phone</th>
+                                    <td>${user.phoneNumber}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Email</th>
+                                    <td>${user.email}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Address</th>
+                                    <td>${user.houseNumber} ${user.street}, ${user.province} ${user.postalCode}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // Append user details table below the cart table
+            cartDiv.innerHTML += userDetailsHtml;
+            cartDiv.innerHTML += timeHtml;
+
+            // Create radio button group for payment selection
+            let paymentMethodHtml = `
+                <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Payment Method</h3>
+                    </div>
+                    <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="paymentMethod"
+                                    id="cashOnDelivery"
+                                    value="cash"
+                                    checked
+                                >
+                                <label class="form-check-label" for="cashOnDelivery">
+                                    Cash on Delivery
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    name="paymentMethod"
+                                    id="paypalPayment"
+                                    value="paypal"
+                                >
+                                <label class="form-check-label" for="paypalPayment">
+                                    Pay Now via PayPal
+                                </label>
+                            </div>
+                    </div>
+                </div>
+            `;
+            // Append the radio button group to the cart display
+            cartDiv.innerHTML += paymentMethodHtml;
+            // Add a "Complete Order" button below the "Pickup or Delivery" section
+            // Append "Complete Order" button
+            let completeOrderHtml = `
+                <div class="mt-4 text-center">
+                    <button class="btn btn-success btn-lg" id="completeOrderButton" onclick="completeOrder(
+                        '${encodeURIComponent(JSON.stringify(user))}',
+                        ${subtotal.toFixed(2)},
+                        ${tax.toFixed(2)},
+                        ${total.toFixed(2)}
+                    )">
+                        Complete Order
+                    </button>
+                </div>
+            `;
+            // Append the button to the cart display
+            cartDiv.innerHTML += completeOrderHtml;
+        }
+
+        /**
+         * Completes the user's order by submitting it to the server.
+         *
+         * This function handles creating the order, associating pizzas and toppings,
+         * and processing payment. It also manages order cleanup in case of errors.
+         *
+         * @param {string} customer - Encoded customer object containing user details.
+         * @param {number} subTotal - The subtotal amount for the order.
+         * @param {number} hst - The tax amount for the order.
+         * @param {number} orderTotal - The total amount for the order.
+         */
+        async function completeOrder(customer, subTotal, hst, orderTotal) {
+            // Initialize arrays to track created entities for cleanup in case of errors
+            const orderList = [];
+            const pizzaList = [];
+            const pizzaToppingMapList = [];
+
+            // Retrieve selected order type and payment method
+            const orderType = document.querySelector('input[name="orderType"]:checked')?.value;
+            const paymentSelection = document.querySelector('input[name="paymentMethod"]:checked')?.value;
+
+            // Decode and parse the customer object
+            const customerobj = JSON.parse(decodeURIComponent(customer));
+            const customer_Id = customerobj.customerId;
+
+            let deliveryDate = null; // Initialize delivery date variable
+            let orderMethodDelivery = false; // Flag for delivery method
+
+            // Handle pickup and delivery time calculations
+            if (orderType === "pickup") {
+                const pickupTime = document.getElementById("pickupTime")?.value;
+                if (pickupTime) {
+                    const [hours, minutes] = pickupTime.split(":");
+                    const pickupDate = new Date();
+                    pickupDate.setHours(hours, minutes, 0, 0);
+                    deliveryDate = formatToLocalISOWithT(pickupDate);
+                }
+            } else if (orderType === "delivery") {
+                orderMethodDelivery = true;
+                const deliveryTime = document.getElementById("deliveryTime")?.value;
+                if (deliveryTime) {
+                    const [hours, minutes] = deliveryTime.split(":");
+                    const deliveryDateObj = new Date();
+                    deliveryDateObj.setHours(hours, minutes, 0, 0);
+                    deliveryDate = formatToLocalISOWithT(deliveryDateObj);
+                }
+            }
+
+            // Capture the current time as the order placed date
+            const now = new Date();
+            const orderPlacedDate = formatToLocalISOWithT(now);
+
+            // Construct the order object
+            const newOrder = {
+                customer: customerobj,
+                subTotal,
+                hst,
+                orderTotal,
+                orderPlacedDate,
+                deliveryDate,
+                delivery: orderMethodDelivery,
+                orderStatus: "PENDING",
+            };
+
+            let pizzaIndexInCart = 0; // Track the index of the cart item being processed
+
+            try {
+                // Create the order on the server
+                const orderObj = await createOrder(newOrder);
+                if (!orderObj) throw new Error("Could not submit Order!");
+                orderList.push(orderObj); // Add to order tracking for cleanup if needed
+
+                const cart = JSON.parse(sessionStorage.getItem('userCart'));
+                const toppings = await fetchToppings();
+                const crusts = await fetchCrusts();
+                const sizes = await fetchSizes();
+
+                // Loop through each item in the cart
+                for (const item of cart) {
+                    // Calculate prices for size, crust, and toppings
+                    const sizePrice = sizes.find(s => s.pizzaSizeId === item.size)?.price || 0;
+                    const crustPrice = crusts.find(c => c.pizzaCrustId === item.crust)?.price || 0;
+                    const toppingsPrice = item.toppings.reduce((acc, toppingId) => {
+                        const topping = toppings.find(t => t.pizzaToppingId === toppingId);
+                        return acc + (topping?.price || 0);
+                    }, 0);
+
+                    // Calculate subtotal for this pizza
+                    const itemSubtotal = (sizePrice + crustPrice + toppingsPrice) * item.quantity;
+                    const subtotalEach = itemSubtotal / item.quantity;
+
+                    // Retrieve the size and crust objects
+                    const pizzaSize = sizes.find(s => s.pizzaSizeId === item.size);
+                    const pizzaCrust = crusts.find(c => c.pizzaCrustId === item.crust);
+
+                    // Construct the pizza object
+                    const newPizza = {
+                        order: orderObj,
+                        pizzaSize: pizzaSize,
+                        pizzaCrust: pizzaCrust,
+                        quantity: item.quantity,
+                        priceEach: subtotalEach,
+                        totalPrice: itemSubtotal,
+                    };
+
+                    const pizzaObj = await createPizza(newPizza);
+                    if (!pizzaObj) throw new Error("Could not add this pizza to your order!\n\nPlease edit this pizza and try again.");
+
+                    // Add created pizza to the list for potential cleanup
+                    pizzaList.push(pizzaObj);
+                    pizzaIndexInCart++;
+
+                    // Loop through and create topping mappings for the pizza
+                    for (const toppingId of item.toppings) {
+                        const toppingMapTopping = toppings.find(t => t.pizzaToppingId === toppingId);
+
+                        // Construct the topping mapping object
+                        const newToppingMap = {
+                            pizza: pizzaObj,
+                            pizzaTopping: toppingMapTopping,
+                        };
+
+                        // Create the topping mapping on the server
+                        const pizzaToppingMapObj = await createPizzaToppingMap(newToppingMap);
+                        if (!pizzaToppingMapObj) throw new Error("Could not add topping map!");
+
+                        // Add created topping map to the list for potential cleanup
+                        pizzaToppingMapList.push(pizzaToppingMapObj);
+                    }
+                }
+                // Proceed to finalize the order with payment selection
+                GoToOrders(paymentSelection);
+            } catch (error) {
+                console.error(error.message);
+
+                // Cleanup: Remove created entities to maintain data consistency
+                await Promise.allSettled(pizzaToppingMapList.map(map => deletePizzaToppingMap(map.pizzaToppingMapId)));
+                await Promise.allSettled(pizzaList.map(pizza => deletePizza(pizza.pizzaId)));
+                await Promise.allSettled(orderList.map(order => deleteOrder(order.orderId)));
+
+                // Update the cart to reflect changes needed after the cleanup
+                await editCartItem(pizzaIndexInCart);
+
+                console.error("Cleanup completed after failure.");
+            }
+        }
+
+        /**
+         * Finalizes the order process and redirects the user to the appropriate page.
+         *
+         * If "PayPal" is selected as the payment method, it opens the PayPal website
+         * in a new popup window. Regardless of the payment method, it displays a success
+         * message, clears the user's cart from session storage, and redirects to the
+         * order view page.
+         *
+         * @param {string} paymentSelection - The selected payment method ("paypal" or "cash").
+         */
+        function GoToOrders(paymentSelection) {
+            //alert(paymentSelection); // Notify the user of the selected payment method
+
+            // Open PayPal in a new popup window if "paypal" is selected
+            if (paymentSelection === "paypal") {
+                window.open('https://www.paypal.com', '_blank', 'width=800,height=600');
+            }
+
+            alert("Order placed successfully!"); // Notify the user of successful order placement
+            sessionStorage.removeItem("userCart"); // Clear the user's cart from session storage
+            window.location.href = "customerViewOrders.html"; // Redirect to the order view page
+        }
+
+        /**
+         * Formats a JavaScript Date object to a local ISO string without timezone information.
+         *
+         * Adjusts the date to the local timezone and formats it as "YYYY-MM-DDTHH:mm:ss".
+         * Useful for ensuring consistent datetime formatting when interacting with the server.
+         *
+         * @param {Date} date - The JavaScript Date object to format.
+         * @returns {string} The formatted date string in "YYYY-MM-DDTHH:mm:ss" format.
+         */
+        function formatToLocalISOWithT(date) {
+            // Adjust the date to local timezone by subtracting the timezone offset
+            const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+
+            // Format as "YYYY-MM-DDTHH:mm:ss" and return
+            return localDate.toISOString().slice(0, 19);
+        }
+
+        /**
+         * Removes an item from the user's cart at the specified index.
+         *
+         * Retrieves the cart from session storage, removes the specified item, updates
+         * the cart in session storage, and reloads the cart display. This function ensures
+         * the cart is kept up-to-date and reflects any deletions.
+         *
+         * @param {number} index - The index of the cart item to remove.
+         */
+        function DeleteCartItem(index) {
+            // Retrieve the current cart from session storage
+            let cart = JSON.parse(sessionStorage.getItem('userCart')) || [];
+
+            // Remove the item at the specified index
+            cart.splice(index, 1);
+
+            // Update the cart in session storage
+            sessionStorage.setItem('userCart', JSON.stringify(cart));
+
+            // Reload the cart display to reflect the updated cart
+            LoadUserCart();
+
+            // Optionally notify the user (commented out for now)
+            //alert("Item removed from cart.");
+        }
+
+        /**
+         * Ensures the user has permission to access the current page.
+         *
+         * Verifies that a user object exists in session storage and that it contains
+         * a valid customer ID. If not, the user is redirected to the login page.
+         * Updates the welcome banner with the user's name if permission is valid.
+         */
+        function EnsurePermission() {
+            // Retrieve the user object from session storage
+            let user = JSON.parse(sessionStorage.getItem("user"));
+
+            // Redirect to the login page if the user is not authenticated
+            if (!user || !user.customerId) {
+                alert("You do not have access to this page.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            // Update the welcome banner with the user's name
+            let welcomeBanner = document.getElementById("welcomeBanner");
+            welcomeBanner.innerHTML = `${user.firstName}'s Cart`;
+        }
+
+        function showUser() {
+            let displayDiv = document.getElementById("userDisplay");
+            let usermsg = sessionStorage.getItem("user");
+            if (usermsg) {
+                displayDiv.innerHTML = usermsg;
+            } else displayDiv.innerHTML = "No user selected";
+        }
+        function showCartInConsole() {
+            let userCart = JSON.parse(sessionStorage.getItem("userCart"));
+            console.log(userCart);
+        }
+
+        /**
+         * Validates the selected pickup time to ensure it is not earlier than the ASAP time.
+         *
+         * If the user selects a time earlier than the ASAP time, the function notifies the user
+         * with an alert, converts the ASAP time to a 12-hour format, and resets the input value
+         * to the earliest allowed time.
+         *
+         * @param {string} asapTime - The earliest allowed pickup time in "HH:mm" format (24-hour time).
+         */
+        function validatePickupTime(asapTime) {
+            // Get the pickup time input element and its value
+            let pickupTimeInput = document.getElementById('pickupTime');
+            let selectedTime = pickupTimeInput.value; // The time selected by the user
+
+            // Check if the selected time is earlier than the ASAP time
+            if (selectedTime < asapTime) {
+                // Convert the ASAP time to a Date object for formatting
+                let asapDate = new Date(`1970-01-01T${asapTime}:00`); // Use a fixed date for time parsing
+
+                // Format the ASAP time to a 12-hour format with AM/PM
+                let formattedAsapTime = asapDate.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+
+                // Notify the user that the selected time is invalid
+                alert(`The pickup time cannot be earlier than the ASAP time: ${formattedAsapTime}`);
+
+                // Reset the pickup time input to the ASAP time
+                pickupTimeInput.value = asapTime;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            EnsurePermission();
+            LoadUserCart();
+        });
+    </script>
+
+</head>
+<body>
+
+<h1 id="welcomeBanner"></h1>
+<div class="d-flex justify-content-around m-3">
+    <a href="customerPizzaBuilder.html" class="btn btn-danger">Add More Pizzas</a>
+    <a href="customerEditProfile.html" class="btn btn-primary">Edit Profile</a>
+    <!--    <a href="customerCart.html" class="btn btn-success">Review Cart</a>-->
+</div>
+<div id="cartDisplay" class=""></div>
+<div id="empty" class="center-btn-container"></div>
+
+
+<!--<div>-->
+<!--    <button onclick="showUser()">Show user</button>-->
+<!--    <div id="userDisplay"></div>-->
+<!--</div>-->
+<!--<div>-->
+<!--    <button onclick="showCartInConsole()">Show Cart</button>-->
+<!--</div>-->
+
+<div class="modal fade" id="editCartModal" tabindex="-1" aria-labelledby="editCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCartModalLabel">Edit Cart Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCartForm">
+                    <div class="container">
+                        <!-- Size Options -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h5>Choose a Size</h5>
+                            </div>
+                            <div id="editSizes" class="col-12">
+                                <!-- Size radio buttons will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <!-- Crust Options -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h5>Choose a Crust</h5>
+                            </div>
+                            <div id="editCrusts" class="col-12">
+                                <!-- Crust radio buttons will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <!-- Toppings -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h5>Choose Your Toppings</h5>
+                            </div>
+                            <div id="editToppings" class="col-12">
+                                <!-- Toppings checkboxes will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="editQuantity" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="editQuantity" min="1" max="5">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveCartItem()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    async function editCartItem(index) {
+        let toppings = await fetchToppings();
+        let crusts = await fetchCrusts();
+        let sizes = await fetchSizes();
+        let cart = JSON.parse(sessionStorage.getItem("userCart")) || [];
+        const cartItem = cart[index];
+
+        // Populate size options
+        const sizesDiv = document.getElementById('editSizes');
+        sizesDiv.innerHTML = sizes.map(size => `
+        <div class="form-check">
+            <input type="radio" class="form-check-input" id="editSize_${size.pizzaSizeId}" name="editSize" value="${size.pizzaSizeId}"
+            ${size.pizzaSizeId === cartItem.size ? "checked" : ""}>
+            <label class="form-check-label" for="editSize_${size.pizzaSizeId}">
+                 ${size.name} (${size.price.toLocaleString("en-US", {style: "currency", currency: "USD"})})
+            </label>
+        </div>`).join('');
+
+        // Populate crust options
+        const crustsDiv = document.getElementById('editCrusts');
+        crustsDiv.innerHTML = crusts.map(crust => `
+        <div class="form-check">
+            <input type="radio" class="form-check-input" id="editCrust_${crust.pizzaCrustId}" name="editCrust" value="${crust.pizzaCrustId}"
+            ${crust.pizzaCrustId === cartItem.crust ? "checked" : ""}>
+            <label class="form-check-label" for="editCrust_${crust.pizzaCrustId}">
+                ${crust.name} (${crust.price.toLocaleString("en-US", {style: "currency", currency: "USD"})})
+            </label>
+        </div>`).join('');
+
+        // Populate toppings
+        const toppingsDiv = document.getElementById('editToppings');
+        toppingsDiv.innerHTML = toppings.map(topping => `
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="editTopping_${topping.pizzaToppingId}" name="editToppings" value="${topping.pizzaToppingId}"
+            ${cartItem.toppings.includes(topping.pizzaToppingId) ? "checked" : ""}>
+            <label class="form-check-label" for="editTopping_${topping.pizzaToppingId}">
+                ${topping.name.charAt(0).toUpperCase() + topping.name.slice(1)} (${topping.price.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD"
+        })})
+            </label>
+        </div>`).join('');
+
+        // Populate quantity
+        document.getElementById('editQuantity').value = cartItem.quantity;
+
+        // Save the index for reference
+        document.getElementById('editCartForm').dataset.index = index;
+
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('editCartModal'));
+        modal.show();
+    }
+
+    function saveCartItem() {
+        let cart = JSON.parse(sessionStorage.getItem("userCart"));
+        const index = document.getElementById('editCartForm').dataset.index;
+
+        // Get updated values
+        const selectedSize = parseInt(document.querySelector('input[name="editSize"]:checked').value);
+        const selectedCrust = parseInt(document.querySelector('input[name="editCrust"]:checked').value);
+        const selectedToppings = Array.from(document.querySelectorAll('input[name="editToppings"]:checked')).map(input => parseInt(input.value));
+        const updatedQuantity = parseInt(document.getElementById('editQuantity').value);
+
+        // Validate updatedQuantity
+        if (isNaN(updatedQuantity) || updatedQuantity < 1 || updatedQuantity > 5) {
+            alert("Quantity must be a number between 1 and 5.");
+            return;
+        }
+        // Update cart item
+        cart[index] = {
+            size: selectedSize,
+            crust: selectedCrust,
+            toppings: selectedToppings,
+            quantity: updatedQuantity
+        };
+
+        // Save updated cart to sessionStorage
+        sessionStorage.setItem('userCart', JSON.stringify(cart));
+
+        // Refresh the cart display
+        LoadUserCart();
+
+        // Close the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editCartModal'));
+        modal.hide();
+    }
+</script>
+</body>
+</html>

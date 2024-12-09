@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .error-message {
+            color: white;
+            font-size: 24px;
+            background-color: #dc3545;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            border-radius: 5px;
+            animation: slide-down 0.2s ease, fade-out 1.5s ease 0.5s forwards;
+        }
+
+        @keyframes slide-down {
+            from {
+                transform: translateX(-50%) translateY(-100%);
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes fade-out {
+            to {
+                opacity: 0;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            background-color: #007bff;
+            color: white;
+        }
+
+        form {
+            width: 50%;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        form label {
+            display: block;
+            font-weight: bold;
+            margin: 10px 0 5px;
+        }
+
+        form input, form select, form button {
+            width: 80%;
+            padding: 10px;
+            margin: auto;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        form button {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        /*a {*/
+        /*    display: block;*/
+        /*    width: 150px;*/
+        /*    margin: 20px auto;*/
+        /*    text-align: center;*/
+        /*    text-decoration: none;*/
+        /*    background-color: #6c757d;*/
+        /*    color: white;*/
+        /*    padding: 10px;*/
+        /*    font-weight: bold;*/
+        /*    border-radius: 5px;*/
+        /*}*/
+
+        /*a:hover {*/
+        /*    background-color: #5a6268;*/
+        /*}*/
+    </style>
+    <script>
+        async function fetchToppings() {
+            try {
+                const response = await fetch('/pizzaToppings');
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    return [];
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching toppings:', error);
+                return [];
+            }
+        }
+
+        async function fetchCrusts() {
+            try {
+                const response = await fetch('/pizzaCrust');
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    return [];
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching toppings:', error);
+                return [];
+            }
+        }
+
+        async function fetchSizes() {
+            try {
+                const response = await fetch('/pizzaSize');
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    return [];
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching toppings:', error);
+                return [];
+            }
+        }
+
+        function ShowUser() {
+            // Retrieve user details from sessionStorage
+            let userDetails = JSON.parse(sessionStorage.getItem("user"));
+            //console.log(userDetails);
+
+            // Get the div where the table will be displayed
+            let userDetailsDiv = document.getElementById("userDiv");
+            userDetailsDiv.innerHTML = ""; // Clear any existing content
+
+            // Create the table with Bootstrap classes
+            let tableHTML = `
+        <table class="table table-bordered m-3 p-3" style="width: 75%; margin: 0 auto;">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>First Name</td>
+                    <td><input type="text" id="firstName" class="form-control" value="${userDetails.firstName}" /></td>
+                </tr>
+                <tr>
+                    <td>Last Name</td>
+                    <td><input type="text" id="lastName" class="form-control" value="${userDetails.lastName}" /></td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td><input type="email" id="email" class="form-control" value="${userDetails.email}" /></td>
+                </tr>
+                <tr>
+                    <td>Phone Number</td>
+                    <td><input type="text" id="phoneNumber" class="form-control" value="${userDetails.phoneNumber}" /></td>
+                </tr>
+                <tr>
+                    <td>House Number</td>
+                    <td><input type="text" id="houseNumber" class="form-control" value="${userDetails.houseNumber}" /></td>
+                </tr>
+                <tr>
+                    <td>Street</td>
+                    <td><input type="text" id="street" class="form-control" value="${userDetails.street}" /></td>
+                </tr>
+                <tr>
+                    <td>Postal Code</td>
+                    <td><input type="text" id="postalCode" class="form-control" value="${userDetails.postalCode}" /></td>
+                </tr>
+                <tr>
+                    <td>Province</td>
+                    <td><input type="text" id="province" class="form-control" value="${userDetails.province}" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <button id="updateUserButton" class="btn btn-primary">Update User</button>
+    `;
+
+            // Append the table to the div
+            userDetailsDiv.innerHTML = tableHTML;
+
+            // Add event listener to the "Update User" button
+            document.getElementById("updateUserButton").addEventListener("click", () => {
+                updateUser(userDetails.customerId);
+            });
+        }
+
+        async function SaveCustomer(customer) {
+            console.log("saveemployee", customer);
+
+            try {
+                const response = await fetch(`/customers/${customer.customerId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(customer)
+                });
+
+                if (!response.ok) {
+                    console.error("Failed to update customer. Status:", response.status);
+                    return null; // Return null if the response status is not OK
+                }
+
+                const data = await response.json();
+                console.log("Customer updated:", data);
+                return data; // Return the updated customer object
+            } catch (error) {
+                console.error("Error updating customer:", error);
+                return null; // Return null in case of an error
+            }
+        }
+
+        async function updateUser(customerId) {
+            // Retrieve and trim input values
+            const firstName = document.getElementById("firstName").value.trim();
+            const lastName = document.getElementById("lastName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phoneNumber = document.getElementById("phoneNumber").value.trim();
+            const houseNumber = document.getElementById("houseNumber").value.trim();
+            const street = document.getElementById("street").value.trim();
+            const postalCode = document.getElementById("postalCode").value.trim();
+            const province = document.getElementById("province").value.trim();
+
+            // Validation
+            const errors = [];
+
+            if (!firstName) errors.push("First name cannot be empty or whitespace.");
+            if (!lastName) errors.push("Last name cannot be empty or whitespace.");
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation regex
+            if (!email || !emailRegex.test(email)) errors.push("Email must be a valid format.");
+
+            const numberRegex = /\d/; // Checks for at least one number
+            if (!phoneNumber || !numberRegex.test(phoneNumber)) {
+                errors.push("Phone number must include at least one numeric digit.");
+            }
+            if (!houseNumber || !numberRegex.test(houseNumber)) {
+                errors.push("House number must include at least one numeric digit.");
+            }
+
+            if (!street) errors.push("Street cannot be empty or whitespace.");
+
+            const provinceRegex = /^[A-Z]{2}$/; // Two uppercase letters
+            if (!province || !provinceRegex.test(province)) {
+                errors.push("Province must be two uppercase letters (e.g., 'NB').");
+            }
+
+            if (!postalCode) errors.push("Postal code cannot be empty or whitespace.");
+
+            // Display errors if validation fails
+            if (errors.length > 0) {
+                alert("Please correct the following errors:\n" + errors.join("\n"));
+                return;
+            }
+
+            // If validation passes, create the updated object
+            const updatedUser = {
+                customerId: customerId,
+                firstName,
+                lastName,
+                email,
+                phoneNumber,
+                houseNumber,
+                street,
+                postalCode,
+                province,
+            };
+
+            let updatedCustomer = await SaveCustomer(updatedUser);
+            if (!updatedCustomer) {
+                alert("Could not update user.")
+                return;
+            }
+            console.log("Updated User Details:", updatedCustomer);
+
+            //sessionStorage.removeItem("user");
+            sessionStorage.setItem("user", JSON.stringify(updatedCustomer));
+            alert("User details updated successfully!");
+            location.reload();
+        }
+
+        function EnsurePermission() {
+            let user = JSON.parse(sessionStorage.getItem("user"));
+            if (!user || !user.customerId) {
+                alert("You do not have access to this page.")
+                window.location.href = "index.html"
+            }
+            let welcomeBanner = document.getElementById("welcomeBanner");
+            welcomeBanner.innerHTML = `${user.firstName}, edit your profile!`;
+        }
+
+        function showUser() {
+            let displayDiv = document.getElementById("userDisplay");
+            let usermsg = sessionStorage.getItem("user");
+            if (usermsg) {
+                displayDiv.innerHTML = usermsg;
+            } else displayDiv.innerHTML = "No user selected";
+        }
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            EnsurePermission();
+            ShowUser();
+            let cart = JSON.parse(sessionStorage.getItem('userCart'));
+            let cartBtn = document.getElementById('reviewOrderButton');
+            cartBtn.innerHTML = cart.length > 0 ? `Cart (${cart.length})` : 'Cart';
+        });
+    </script>
+
+</head>
+<body>
+
+<h1 id="welcomeBanner"></h1>
+<div class="container p-3 my-4 border rounded shadow">
+<div class="d-flex justify-content-around m-3">
+    <a href="customerDashboard.html" class="btn btn-primary">Dashboard</a>
+    <a><button id="reviewOrderButton" class="btn btn-success">Your Cart</button></a>
+</div></div>
+<div id="userDiv" class="d-flex justify-content-center align-items-center flex-column"></div>    <!-- Sub-divs go here -->
+<!--<div>-->
+<!--    <button onclick="showUser()">Show user</button>-->
+<!--    <div id="userDisplay"></div>-->
+<!--</div>-->
+<div class="modal fade" id="reviewOrderModal" tabindex="-1" aria-labelledby="reviewOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewOrderModalLabel">Review Your Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Table to Display Cart Items -->
+                <div id="cartTableContainer">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Size</th>
+                            <th>Crust</th>
+                            <th>Toppings</th>
+                            <th>Quantity</th>
+                            <th>Subtotal</th>
+                        </tr>
+                        </thead>
+                        <tbody id="cartTableBody">
+                        <!-- Rows will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="proceedToCheckoutButton">Proceed to Checkout</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.getElementById('reviewOrderButton').addEventListener('click', () => {
+        let userCart = JSON.parse(sessionStorage.getItem('userCart')) || [];
+
+        // If the cart is empty, show an alert and do not open the modal
+        if (userCart.length === 0) {
+            alert("Your cart is empty! Please add items to your cart before reviewing.");
+            return;
+        }
+
+        // Clear existing table rows
+        const cartTableBody = document.getElementById('cartTableBody');
+        cartTableBody.innerHTML = '';
+
+        // Load size, crust, and toppings data
+        Promise.all([fetchSizes(), fetchCrusts(), fetchToppings()]).then(([sizes, crusts, toppings]) => {
+            let subtotal = 0;
+
+            userCart.forEach((item, index) => {
+                // Get size, crust, and toppings names
+                const size = sizes.find(s => s.pizzaSizeId === item.size)?.name || "Unknown";
+                const crust = crusts.find(c => c.pizzaCrustId === item.crust)?.name || "Unknown";
+                const selectedToppings = item.toppings
+                    .map(toppingId => {
+                        let topping = toppings.find(t => t.pizzaToppingId === toppingId)?.name || "Unknown";
+                        return topping.charAt(0).toUpperCase() + topping.slice(1); // Capitalize first letter
+                    })
+                    .join(", ") || "None";
+
+                // Calculate item subtotal
+                const sizePrice = sizes.find(s => s.pizzaSizeId === item.size)?.price || 0;
+                const crustPrice = crusts.find(c => c.pizzaCrustId === item.crust)?.price || 0;
+                const toppingsPrice = item.toppings.reduce((acc, toppingId) => {
+                    let topping = toppings.find(t => t.pizzaToppingId === toppingId);
+                    return acc + (topping?.price || 0);
+                }, 0);
+
+                const itemSubtotal = (sizePrice + crustPrice + toppingsPrice) * item.quantity;
+                subtotal += itemSubtotal;
+
+                // Add a row to the table
+                cartTableBody.innerHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${size}</td>
+                    <td>${crust}</td>
+                    <td>${selectedToppings}</td>
+                    <td>${item.quantity}</td>
+                    <td>${itemSubtotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
+                </tr>
+            `;
+            });
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('reviewOrderModal'));
+            modal.show();
+        });
+    });
+
+    // Proceed to Checkout button
+    document.getElementById('proceedToCheckoutButton').addEventListener('click', () => {
+        window.location.href = "customerCart.html"; // Redirect to the checkout page
+    });
+</script>
+</body>
+</html>
